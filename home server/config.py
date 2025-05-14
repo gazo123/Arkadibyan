@@ -1,0 +1,3 @@
+TOTAL_FOREIGN_SERVERS = 3  # for now
+LISTEN_PORT = 8000
+
