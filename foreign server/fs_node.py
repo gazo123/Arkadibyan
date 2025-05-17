@@ -7,8 +7,9 @@ import json
 class ForeignServer:
     def __init__(self, fs_id):
         self.fs_id = fs_id
+        self.user_pid = {}  # Stores {user_id: pid}
+        self.share_file = os.path.join(SHARE_DIR, f"share_{fs_id}.json")
         os.makedirs(SHARE_DIR, exist_ok=True)
-        self.share_path = f"{SHARE_DIR}/share_{fs_id}.json"
 
     def register_and_receive(self):
         try:
