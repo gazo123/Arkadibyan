@@ -118,9 +118,7 @@ class ForeignServer:
         threading.Thread(target=listener, daemon=True).start()
 
     def check_if_user_present(self, user_pid_dict):
-        """
-        Checks if the user_id from the given PID dict is present in the local share file.
-        """
+       
         if not os.path.exists(self.share_path):
             print(f"[FS {self.fs_id}] ❌ Share file does not exist: {self.share_path}")
             return

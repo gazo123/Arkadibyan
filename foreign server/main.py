@@ -16,7 +16,7 @@ def main():
 
     fs.start_share_request_listener()  # Keeps FS ready to respond
 
-    if fs.check_if_user_present(fs.pid_dict):
+    if fs.check_if_user_present(fs.user_pid):
         fs.broadcast_share_request(fs.user_id)
 
 
