@@ -28,6 +28,7 @@
 from fs_node import ForeignServer
 import sys
 import time
+import threading
 
 def main():
     if len(sys.argv) != 2:
@@ -39,7 +40,7 @@ def main():
 
     fs.register_and_receive()
     fs.start_pid_listener()
-    fs.start_share_request_listener()
+    threading.Thread(target=fs.start_share_request_listener, daemon=True).start()
 
     print(f"[FS {fs_id}] ✅ Running. Waiting for Mobile User PID...\n")
 
@@ -51,8 +52,6 @@ def main():
 
                 # Only check once per user_id
                 if fs.check_if_user_present(fs.user_pid):
-                    print(f"\n[FS {fs_id}] ✅ UserID '{user_id}' is valid in local share.")
-
                     # Ask user for choice only once
                     choice = input(f"[FS {fs_id}] ❓ Do you want to broadcast a share request for '{user_id}'? (y/n): ").strip().lower()
                     if choice == 'y':
