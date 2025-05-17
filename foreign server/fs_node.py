@@ -29,21 +29,27 @@ class ForeignServer:
 
     def start_pid_listener(self):
         port = 9000 + self.fs_id + PID_PORT_OFFSET
-        print(f"[FS {self.fs_id}] Listening for PID messages on port {port}...")
+        print(f"[FS {self.fs_id}] PID listener on port {port}")
 
-        def handler():
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.bind(('0.0.0.0', port))
-                s.listen()
-                while True:
-                    conn, addr = s.accept()
-                    with conn:
-                        try:
+        def listener():
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                    s.bind(('0.0.0.0', port))
+                    s.listen()
+                    print(f"[FS {self.fs_id}] Listening for PID on port {port}...")
+
+                    while True:
+                        conn, addr = s.accept()
+                        with conn:
                             data = conn.recv(1024).decode()
-                            pid_data = json.loads(data)
-                            self.user_pid.update(pid_data)
-                            print(f"[FS {self.fs_id}] ✅ Received PID: {pid_data}")
-                        except Exception as e:
-                            print(f"[FS {self.fs_id}] ❌ Failed to parse PID: {e}")
+                            try:
+                                pid_data = json.loads(data)
+                                self.user_pid.update(pid_data)
+                                print(f"[FS {self.fs_id}] ✅ Received PID: {pid_data}")
+                            except Exception as e:
+                                print(f"[FS {self.fs_id}] ❌ JSON error: {e}")
+            except Exception as e:
+                print(f"[FS {self.fs_id}] ❌ PID Listener failed: {e}")
 
-        threading.Thread(target=handler, daemon=True).start()
+        threading.Thread(target=listener, daemon=True).start()
