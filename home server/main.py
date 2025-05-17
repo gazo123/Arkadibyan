@@ -9,8 +9,8 @@ def main():
     
     # Step 1: Register users
     register_user("pushan123")
-    register_user("dibya456")
-    register_user("pritam69")
+    register_user("arkapriya69")
+    register_user("pritam420")
 
     users = load_users()
 
