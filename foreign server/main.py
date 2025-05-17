@@ -9,9 +9,9 @@ def main():
     fs_id = int(sys.argv[1])
     fs = ForeignServer(fs_id)
 
-    fs.start_pid_listener()
     fs.register_and_receive()
-
+    fs.start_pid_listener()
+    
     print(f"[FS {fs_id}] Running... waiting for PID.")
 
     while True:
