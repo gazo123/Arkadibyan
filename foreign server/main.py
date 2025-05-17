@@ -10,9 +10,15 @@ def main():
     fs = ForeignServer(fs_id)
 
     fs.register_and_receive()
-    fs.start_pid_listener()
     
     print(f"[FS {fs_id}] Running... waiting for PID.")
+    fs.start_pid_listener()
+
+    fs.start_share_request_listener()  # Keeps FS ready to respond
+
+    if fs.check_if_user_present(fs.pid_dict):
+        fs.broadcast_share_request(fs.user_id)
+
 
     while True:
         pass  # keep alive
