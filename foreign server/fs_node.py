@@ -1,7 +1,6 @@
      
 import socket
 import os
-import threading
 import json
 from config import HOME_IP, HOME_PORT, SHARE_DIR, PID_PORT_OFFSET, FOREIGN_SERVERS, SHARE_REQUEST_PORT_OFFSET
 
@@ -28,19 +27,17 @@ class ForeignServer:
         except Exception as e:
             print(f"[FS {self.fs_id}] ❌ Error: {e}")
 
-                
     def start_pid_listener(self):
         port = 9000 + self.fs_id + PID_PORT_OFFSET
-        print(f"[FS {self.fs_id}] PID listener on port {port}")
+        print(f"[FS {self.fs_id}] 🧿 PID listener on port {port}")
 
         def listener():
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                    s.bind(("0.0.0.0", port))  # FS machine IP
-
+                    s.bind(("0.0.0.0", port))
                     s.listen()
-                    print(f"[FS {self.fs_id}] Listening for PID on port {port}...")
+                    print(f"[FS {self.fs_id}] 🧿 Listening for PID on port {port}...")
 
                     while True:
                         conn, addr = s.accept()
@@ -50,12 +47,14 @@ class ForeignServer:
                                 pid_data = json.loads(data)
                                 self.user_pid.update(pid_data)
                                 print(f"[FS {self.fs_id}] ✅ Received PID: {pid_data}")
-                                
                             except Exception as e:
                                 print(f"[FS {self.fs_id}] ❌ JSON error: {e}")
             except Exception as e:
                 print(f"[FS {self.fs_id}] ❌ PID Listener failed: {e}")
-        listener()
+
+        # Don't call listener(); just return the thread function
+        return listener
+    
 
     def check_if_user_present(self, user_pid_dict):
        
@@ -107,31 +106,62 @@ class ForeignServer:
             return None
 
 
+    
+    
+    def start_pid_listener(self):
+        port = 9000 + self.fs_id + PID_PORT_OFFSET
+        print(f"[FS {self.fs_id}] 🧿 PID listener on port {port}")
+
+        def listener():
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                    s.bind(("0.0.0.0", port))
+                    s.listen()
+                    print(f"[FS {self.fs_id}] 🧿 Listening for PID on port {port}...")
+
+                    while True:
+                        conn, addr = s.accept()
+                        with conn:
+                            data = conn.recv(4096).decode()
+                            try:
+                                pid_data = json.loads(data)
+                                self.user_pid.update(pid_data)
+                                print(f"[FS {self.fs_id}] ✅ Received PID: {pid_data}")
+                            except Exception as e:
+                                print(f"[FS {self.fs_id}] ❌ JSON error: {e}")
+            except Exception as e:
+                print(f"[FS {self.fs_id}] ❌ PID Listener failed: {e}")
+
+        # Don't call listener(); just return the thread function
+        return listener
+
+
     def start_share_request_listener(self):
-        """
-        Listens for incoming share requests from other FSs and sends back the share for the requested user_id.
-        """
         port = 9000 + self.fs_id + SHARE_REQUEST_PORT_OFFSET
         print(f"[FS {self.fs_id}] 🛡 Listening for share requests on port {port}...")
 
         def handler():
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                s.bind(('0.0.0.0', port))
-                s.listen()
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                    s.bind(('0.0.0.0', port))
+                    s.listen()
 
-                while True:
-                    conn, addr = s.accept()
-                    with conn:
-                        try:
-                            user_id = conn.recv(1024).decode().strip()
-                            share = self.get_share_for_user(user_id)
-                            if share:
-                                conn.sendall(json.dumps(share).encode())
-                                print(f"[FS {self.fs_id}] 📤 Sent share for '{user_id}' to {addr[0]}")
-                            else:
-                                conn.sendall(b'{}')  # Empty response if not found
-                        except Exception as e:
-                            print(f"[FS {self.fs_id}] ❌ Error handling request: {e}")
-        handler()
-    
+                    while True:
+                        conn, addr = s.accept()
+                        with conn:
+                            try:
+                                user_id = conn.recv(1024).decode().strip()
+                                share = self.get_share_for_user(user_id)
+                                if share:
+                                    conn.sendall(json.dumps(share).encode())
+                                    print(f"[FS {self.fs_id}] 📤 Sent share for '{user_id}' to {addr[0]}")
+                                else:
+                                    conn.sendall(b'{}')
+                            except Exception as e:
+                                print(f"[FS {self.fs_id}] ❌ Error handling request: {e}")
+            except Exception as e:
+                print(f"[FS {self.fs_id}] ❌ Share Request Listener failed: {e}")
+
+        return handler
