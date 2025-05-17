@@ -42,7 +42,7 @@ class ForeignServer:
                     while True:
                         conn, addr = s.accept()
                         with conn:
-                            data = conn.recv(1024).decode()
+                            data = conn.recv(4096).decode()
                             try:
                                 pid_data = json.loads(data)
                                 self.user_pid.update(pid_data)
