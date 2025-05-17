@@ -46,18 +46,23 @@ def main():
     try:
         while True:
             if fs.user_pid:
-                user_id = list(fs.user_pid.keys())[0]  # Take first user received
+                # Get the user_id
+                user_id = list(fs.user_pid.keys())[0]
 
+                # Only check once per user_id
                 if fs.check_if_user_present(fs.user_pid):
                     print(f"\n[FS {fs_id}] ✅ UserID '{user_id}' is valid in local share.")
 
+                    # Ask user for choice only once
                     choice = input(f"[FS {fs_id}] ❓ Do you want to broadcast a share request for '{user_id}'? (y/n): ").strip().lower()
                     if choice == 'y':
                         fs.broadcast_share_request(user_id)
 
-                    # Reset so it doesn't repeat
-                    fs.user_pid.clear()
+                # Clear PID dict to avoid repeated checks
+                fs.user_pid.clear()
+
             time.sleep(1)
+
 
     except KeyboardInterrupt:
         print(f"\n[FS {fs_id}] 🛑 Shutting down.")
