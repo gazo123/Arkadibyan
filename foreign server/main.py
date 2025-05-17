@@ -10,5 +10,13 @@ def main():
     fs = ForeignServer(fs_id)
     fs.register_and_receive()
 
+    fs.start_pid_listener()
+
+    print(f"[FS {fs_id}] ✅ Ready and waiting for PID messages...")
+
+    # Keep the process alive
+    while True:
+        pass
+
 if __name__ == "__main__":
     main()
