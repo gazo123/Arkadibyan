@@ -55,8 +55,7 @@ class ForeignServer:
                                 print(f"[FS {self.fs_id}] ❌ JSON error: {e}")
             except Exception as e:
                 print(f"[FS {self.fs_id}] ❌ PID Listener failed: {e}")
-
-        threading.Thread(target=listener, daemon=True).start()
+        listener()
 
     def check_if_user_present(self, user_pid_dict):
        
@@ -134,4 +133,5 @@ class ForeignServer:
                                 conn.sendall(b'{}')  # Empty response if not found
                         except Exception as e:
                             print(f"[FS {self.fs_id}] ❌ Error handling request: {e}")
+        handler()
     
