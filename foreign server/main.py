@@ -39,7 +39,7 @@ def main():
     fs = ForeignServer(fs_id)
 
     fs.register_and_receive()
-    fs.start_pid_listener()
+    threading.Thread(target=fs.start_pid_listener, daemon=True).start()
     threading.Thread(target=fs.start_share_request_listener, daemon=True).start()
 
     print(f"[FS {fs_id}] ✅ Running. Waiting for Mobile User PID...\n")
